@@ -28,25 +28,25 @@ The rules of Gomoku are incredibly simple to learn, but notoriously difficult to
 
 ## Running Locally
 
-**1. Clone the repository**
-\`\`\`bash
-git clone  https://github.com/ShyamNehra/gomoku_web.git
+**1. Clone the repository** \
+\`\`\`bash \
+git clone  https://github.com/ShyamNehra/gomoku_web.git \
 cd gomoku-web
 \`\`\`
 
 **2. Start the Backend (FastAPI)**
-\`\`\`bash
-cd backend
-python -m venv .venv
-source .venv/Scripts/activate  # Or .\venv\Scripts\Activate.ps1 on Windows
-pip install -r requirements.txt
+\`\`\`bash \
+cd backend \
+python -m venv .venv \
+source .venv/Scripts/activate  # Or .\venv\Scripts\Activate.ps1 on Windows \
+pip install -r requirements.txt \
 uvicorn main:app --reload
 \`\`\`
 
-**3. Start the Frontend (React/Vite)**
-Open a new terminal window:
-\`\`\`bash
-cd frontend
-npm install
-npm run dev
+**3. Start the Frontend (React/Vite)** \
+Open a new terminal window: \
+\`\`\` bash \
+cd frontend \
+npm install \
+npm run dev 
 \`\`\`
