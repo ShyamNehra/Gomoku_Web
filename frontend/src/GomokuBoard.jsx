@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const CELL_SIZE      = 48;
-const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com";
+const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com/ws/game";
 const PIECE_RADIUS   = CELL_SIZE * 0.38;
 const DRAG_THRESHOLD = 10;
 
