@@ -1,6 +1,6 @@
 #  Infinite Gomoku
 
-**[Play the Live Demo Here](https://gomokufrontend.vercel.app/)**
+**[Play the Live Demo Here](https://infinitegomoku.vercel.app/)**
 
 **Infinite Gomoku** is a sleek, modern reimagining of the classic strategy board game, completely removing the boundaries of the traditional 15x15 grid. Built with a buttery-smooth HTML5 Canvas and a real-time WebSocket backend, players can seamlessly click and drag to pan across an endless playing field to outmaneuver their opponents. 
 
