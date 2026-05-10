@@ -1,8 +1,10 @@
 import { useEffect, useRef, useCallback, useState } from "react";
+import { playSound } from "./audio";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const CELL_SIZE      = 48;
-const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com/ws/game";
+// const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com/ws/game";
+const WS_URL         = "ws://localhost:8000/ws/game";
 const PIECE_RADIUS   = CELL_SIZE * 0.38;
 const DRAG_THRESHOLD = 10;
 
@@ -26,30 +28,6 @@ const THEME = {
   pieceOText:    "#e8b84b",
   ghostFill:     "rgba(232,184,75,0.07)",
   ghostStroke:   "rgba(232,184,75,0.28)",
-};
-
-// ── Sounds ─────────────────────────────────────────────────────────────────
-const SOUNDS = {
-  click: "/sounds/click.wav",
-  place: "/sounds/place.wav",
-  win:   "/sounds/win.wav",
-  lose:  "/sounds/lose.wav",
-};
-
-const AUDIO_INSTANCES = {};
-if (typeof window !== "undefined") {
-  for (const [key, path] of Object.entries(SOUNDS)) {
-    const audio = new Audio(path);
-    audio.preload = "auto";
-    AUDIO_INSTANCES[key] = audio;
-  }
-}
-
-const playSound = (type) => {
-  const instance = AUDIO_INSTANCES[type];
-  if (!instance) return;
-  const audio = instance.cloneNode(true);
-  audio.play().catch(() => {}); // Catch browser-blocked autoplay
 };
 
 // ── Pure drawing helpers ───────────────────────────────────────────────────
@@ -227,7 +205,7 @@ function pixelToGrid(px, py, camera) {
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function KyroBoard() {
+export default function KyroBoard({ volume, onBackToMenu }) {
   const canvasRef  = useRef(null);
   const cameraRef  = useRef({ x: 0, y: 0 });
   const dragRef    = useRef(null);
@@ -238,16 +216,16 @@ export default function KyroBoard() {
   const hoverRef   = useRef(null);
   const myTurnRef  = useRef(true);
 
+  const vol = volume / 100;
+
   // Scoreboard Refs & State
   const matchScoredRef = useRef(false);
   const [scores, setScores] = useState({ X: 0, O: 0 });
 
-  const [appState, setAppState] = useState("MENU");
-  const appStateRef = useRef("MENU"); 
+  const [appState, setAppState] = useState("PLAYING");
+  const appStateRef = useRef("PLAYING"); 
 
-  const [showRules, setShowRules] = useState(false);
-
-  const [gameMode, setGameMode] = useState("ai");
+  const [gameMode] = useState("ai");
   const gameModeRef = useRef("ai");
   
   const [status,    setStatus]    = useState("Connecting…");
@@ -256,10 +234,10 @@ export default function KyroBoard() {
   const [gameOver,  setGameOver]  = useState(false);
 
   const changeState = useCallback((newState) => {
-    playSound("click");
+    playSound("click", vol);
     appStateRef.current = newState;
     setAppState(newState);
-  }, []);
+  }, [vol]);
 
   // ── Scheduling ────────────────────────────────────────────────────────
   const draw = useCallback(() => {
@@ -331,7 +309,7 @@ export default function KyroBoard() {
           const newCount = Object.keys(boardRef.current).length;
 
           if (newCount > prevCount) {
-            playSound("place");
+            playSound("place", vol);
           }
 
           if (gameModeRef.current === "pvp") {
@@ -349,13 +327,13 @@ export default function KyroBoard() {
         if (data.game_over && !matchScoredRef.current) {
           if (data.winner === "X") {
             setScores(s => ({ ...s, X: s.X + 1 }));
-            playSound("win");
+            playSound("win", vol);
           } else if (data.winner === "O") {
             setScores(s => ({ ...s, O: s.O + 1 }));
             // In AI mode, O winning is a loss for the player.
             // In PvP mode, O winning is still a "win" for player O.
-            if (gameModeRef.current === "ai") playSound("lose");
-            else playSound("win");
+            if (gameModeRef.current === "ai") playSound("lose", vol);
+            else playSound("win", vol);
           }
           matchScoredRef.current = true; // Lock it so it doesn't double count!
         }
@@ -379,28 +357,16 @@ export default function KyroBoard() {
     }
 
     connect();
-    return () => { clearTimeout(reconnectTimer); ws?.close(); };
-  }, [scheduleDraw]); 
+    return () => { 
+      clearTimeout(reconnectTimer); 
+      if (wsRef.current) {
+        wsRef.current.onclose = null; // Prevent reconnection attempt on intentional close
+        wsRef.current.close(); 
+      }
+    };
+  }, [scheduleDraw, vol]); 
 
   // ── Game Actions ──────────────────────────────────────────────────────
-  const startGame = useCallback((mode) => {
-    if (gameModeRef.current !== mode) {
-      setScores({ X: 0, O: 0 }); // Reset score if switching between AI and PvP
-    }
-    gameModeRef.current = mode;
-    matchScoredRef.current = false; // Unlock score for new round
-    
-    setGameMode(mode);
-    changeState("PLAYING");
-    setGameOver(false);
-    winningLineRef.current = [];
-
-    // Only send if socket is open; if not, ws.onopen will sync the mode later
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ action: "reset", mode }));
-    }
-  }, [changeState]);
-
   const resetGame = useCallback(() => {
     matchScoredRef.current = false; // Unlock score for new round
     changeState("PLAYING");
@@ -411,6 +377,7 @@ export default function KyroBoard() {
       wsRef.current.send(JSON.stringify({ action: "reset", mode: gameModeRef.current }));
     }
   }, [changeState]);
+
 
   const sendMove = useCallback((gx, gy) => {
     if (appStateRef.current !== "PLAYING") return; 
@@ -675,51 +642,13 @@ win
 
         <div className="hud kyro-badge">drag to pan · click to play</div>
 
-        {appState === "MENU" && !showRules && (
-          <div className="overlay-container">
-            <div className="menu-box">
-              <div className="menu-title">Select Mode</div>
-              <button className="menu-btn accent" onClick={() => startGame("ai")}>Play vs AI</button>
-              <button className="menu-btn" onClick={() => startGame("pvp")}>Local PvP</button>
-              <button className="menu-btn" onClick={() => { playSound("click"); setShowRules(true); }}>How to Play</button>
-            </div>
-          </div>
-        )}
-
-        {showRules && (
-          <div className="overlay-container">
-            <div className="menu-box">
-              <div className="menu-title">How to Play</div>
-              <div className="rules-list">
-                <div className="rules-item">
-                  <span className="rules-bullet">01</span>
-                  <span>Connect exactly five pieces in a row — horizontally, vertically, or diagonally.</span>
-                </div>
-                <div className="rules-item">
-                  <span className="rules-bullet">02</span>
-                  <span>Players take turns placing one piece at a time in any empty square.</span>
-                </div>
-                <div className="rules-item">
-                  <span className="rules-bullet">03</span>
-                  <span>The board is infinite. Click and drag to pan the camera across the grid.</span>
-                </div>
-                <div className="rules-item">
-                  <span className="rules-bullet">04</span>
-                  <span>The game ends immediately when a player completes a chain of five.</span>
-                </div>
-              </div>
-              <button className="menu-btn accent" onClick={() => { playSound("click"); setShowRules(false); }}>Got it</button>
-            </div>
-          </div>
-        )}
-
         {appState === "PAUSED" && (
           <div className="overlay-container">
             <div className="menu-box">
               <div className="menu-title">Paused</div>
               <button className="menu-btn accent" onClick={() => changeState("PLAYING")}>Resume</button>
               <button className="menu-btn" onClick={resetGame}>Restart Match</button>
-              <button className="menu-btn" onClick={() => changeState("MENU")}>Main Menu</button>
+              <button className="menu-btn" onClick={onBackToMenu}>Main Menu</button>
             </div>
           </div>
         )}
@@ -729,10 +658,11 @@ win
             <div className="menu-box">
               <div className="menu-title">{message}</div>
               <button className="menu-btn accent" onClick={resetGame}>Play Again</button>
-              <button className="menu-btn" onClick={() => changeState("MENU")}>Main Menu</button>
+              <button className="menu-btn" onClick={onBackToMenu}>Main Menu</button>
             </div>
           </div>
         )}
+
 
       </div>
     </>

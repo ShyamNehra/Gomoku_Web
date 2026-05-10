@@ -2,16 +2,6 @@
 
 This file tracks the latest updates and improvements made to the Infinite Kyro project.
 
-## [2026-04-26 15:00] - Rebranding, State-Sync & UX Polish
-- **Rebranded**: Officially renamed the project from "Gomoku" to **Kyro**. Updated all UI labels, documentation, and file structures.
-- **Fixed**: Critical state-sync bug where delayed WebSocket connections would wipe the first move or default to the wrong game mode.
-- **Added**: **Golden Win Line** — A glowing golden line now connects the 5 winning pieces immediately upon victory.
-- **Improved**: Added a 1-second delay to the "Game Over" popup, giving players a moment to appreciate the winning move and line.
-- **Improved**: Optimized local development by implementing a dynamic `WS_URL` that automatically switches between `localhost` and production servers.
-- **Added**: Backend now explicitly tracks and sends the `winning_line` coordinates to the frontend.
-- **Cleaned**: Removed unused assets (`hero.png`, Vite/React svgs) and redundant CSS to reduce build size.
-- **Cleaned**: Removed development test blocks and dead logic from backend modules for a cleaner production state.
-
 ## [2026-04-18 14:30] - Sound Effects Integration
 - **Added**: Centralized `SOUNDS` configuration and `playSound` utility.
 - **Improved**: UI interaction with a `click` sound on all menu and game buttons.
@@ -35,5 +25,24 @@ This file tracks the latest updates and improvements made to the Infinite Kyro p
 - **Improved**: Enhanced the Scoreboard to display in both "vs AI" and "Local PvP" modes with dynamic labels (**PLAYER** vs **AI** or **PLAYER X** vs **PLAYER O**).
 - **Updated**: Standardized all audio assets to `.wav` format for consistent quality and performance.
 
+## [2026-04-26 15:00] - Rebranding, State-Sync & UX Polish
+- **Rebranded**: Officially renamed the project from "Gomoku" to **Kyro**. Updated all UI labels, documentation, and file structures.
+- **Fixed**: Critical state-sync bug where delayed WebSocket connections would wipe the first move or default to the wrong game mode.
+- **Added**: **Golden Win Line** — A glowing golden line now connects the 5 winning pieces immediately upon victory.
+- **Improved**: Added a 1-second delay to the "Game Over" popup, giving players a moment to appreciate the winning move and line.
+- **Improved**: Optimized local development by implementing a dynamic `WS_URL` that automatically switches between `localhost` and production servers.
+- **Added**: Backend now explicitly tracks and sends the `winning_line` coordinates to the frontend.
+- **Cleaned**: Removed unused assets (`hero.png`, Vite/React svgs) and redundant CSS to reduce build size.
+- **Cleaned**: Removed development test blocks and dead logic from backend modules for a cleaner production state.
+
+## [2026-05-10 16:30] - Major Frontend Restructure & 3x3 Game Mode
+- **Restructured**: Completely overhauled the frontend architecture to a screen-based navigation system using a centralized state manager in `App.jsx`.
+- **Added**: **Main Menu System** — New dedicated screens for Main Menu, Mode Selection, "How to Play", and Settings.
+- **Added**: **Classic 3x3 Mode** — Implemented a rigorous, fixed 3x3 Tic-Tac-Toe mode with its own win-detection logic.
+- **Added**: **3x3 AI (Minimax)** — The 3x3 mode includes a perfect-play Minimax AI opponent for single-player matches.
+- **Added**: **Master Volume Control** — Global volume slider in the Settings screen that controls all game audio via a new centralized `audio.js` utility.
+- **Refactored**: **Infinite Mode Integration** — Converted the existing Infinite Gomoku board into a modular component that respects global settings and navigation.
+- **Improved**: **Visual Consistency** — Standardized the premium "Kyro" theme (dark backgrounds, gold accents, monospace fonts) across all new screens and game modes.
+
 ---
-*Last updated: 2026-04-26 15:05*
+*Last updated: 2026-05-10 16:30*
