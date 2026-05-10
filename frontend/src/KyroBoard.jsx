@@ -3,8 +3,8 @@ import { playSound } from "./audio";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const CELL_SIZE      = 48;
-// const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com/ws/game";
-const WS_URL         = "ws://localhost:8000/ws/game";
+const WS_URL         = "wss://gomoku-backend-v3wc.onrender.com/ws/game";
+// const WS_URL         = "ws://localhost:8000/ws/game";
 const PIECE_RADIUS   = CELL_SIZE * 0.38;
 const DRAG_THRESHOLD = 10;
 
